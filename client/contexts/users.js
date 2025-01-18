@@ -9,22 +9,37 @@ export const GlobalStateProvider = ({ children }) => {
     {
       name: 'Mother',
       picture: '/testimg.jpg',
-      shoppingList: [],
+      shoppingList: ['item1', 'item2', 'item3'],
     },
     {
       name: 'test',
-      picture: '',
+      picture: '/testimg.jpg',
       shoppingList: [],
     },
     {
       name: 'test2',
-      picture: '',
+      picture: '/testimg.jpg',
       shoppingList: [],
     },
   ]);
+  const [groceryItems, setGroceryItems] = useState([
+    {
+        name: 'apple',
+        picture: '/apple.png'
+    },
+    {
+        name: 'potato',
+        picture: '/potato.png'
+    },
+    {
+        name: 'banana',
+        picture: '/banana.png'
+    }
+  ]);
+  const [selectedUser, setSelectedUser] = useState(0);
 
   return (
-    <GlobalStateContext.Provider value={{ state, setState }}>
+    <GlobalStateContext.Provider value={{ state, setState, selectedUser, setSelectedUser, groceryItems, setGroceryItems }}>
       {children}
     </GlobalStateContext.Provider>
   );
