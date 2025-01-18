@@ -77,4 +77,5 @@ def detect_food_from_camera(camera_url):
 
 # Example usage ################################################################
 camera_url = ... # TODO: INSERT CAMERA URL HERE 
+# default camera is 0
 detect_food_from_camera(camera_url)
