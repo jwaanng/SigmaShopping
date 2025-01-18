@@ -8,8 +8,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        background: "#FFFFFF",
+        menuColor: "#82ABA1",
+      },
+      fontFamily: {
+        geologica: ['Geologica', 'serif'], // Add your font here
       },
     },
   },
