@@ -1,7 +1,7 @@
 // app/menu/page.js
 'use client';
 
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { GlobalStateContext } from '../contexts/users';
 
 export default function Home() {
@@ -9,12 +9,26 @@ export default function Home() {
   const { selectedUser, setSelectedUser } = useContext(GlobalStateContext);
   const { groceryItems, setGroceryItems } = useContext(GlobalStateContext);
 
+  const handleAddItem = (item) => {
+    console.log('Item clicked:', item.name);
+    setState((prev) => {
+      const newState = [...prev];
+      newState[selectedUser].shoppingList.push(item.name);
+      console.log('Updated state:', newState);
+      return newState;
+    });
+  };
+  
+  useEffect(() => {
+    console.log('Component mounted or updated');
+  }, [state]);
+
   return (
-    <div className="ml-12 mt-16">
+    <div className="ml-12 mt-16 font-geologica">
       {/* user selection section */}
       <div>
 
-        <p className="font-geologica text-4xl">Who do you want to shop with <br></br>today?</p>
+        <p className="text-4xl">Who do you want to shop with <br></br>today?</p>
 
         <div className="flex flex-row space-x-16">
           {state.map((user, index) => (
@@ -32,18 +46,18 @@ export default function Home() {
 
         {/* grocery selection section */}
         <div className="mt-32">
-          <p className="font-geologica text-4xl">Groceries</p>
+          <p className="font-geologica text-4xl ml-4">Groceries</p>
 
           <div className="flex flex-row space-x-16">
             {groceryItems.map((item, index) => (
-              <div key={index} className="flex flex-col items-center mt-8">
+              <div key={index} className="flex flex-col items-center mt-8 border-2 rounded-2xl">
                 <img
-                  className="w-32 h-32 rounded-full object-cover cursor-pointer"
+                  className="w-64 h-64 rounded-2xl object-cover cursor-pointer border-2"
                   src={item.picture}
                   alt="grocery_picture"
-                  onClick={() => console.log("clicked")}
+                  onClick={() => handleAddItem(item)}
                 />
-                <p className="text-lg font-geologica">{item.name}</p>
+                <p className="text-lg font-geologica my-8">{item.name}</p>
               </div>
             ))}
           </div>

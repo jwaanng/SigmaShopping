@@ -9,7 +9,7 @@ export const GlobalStateProvider = ({ children }) => {
     {
       name: 'Mother',
       picture: '/testimg.jpg',
-      shoppingList: ['item1', 'item2', 'item3'],
+      shoppingList: [],
     },
     {
       name: 'test',
