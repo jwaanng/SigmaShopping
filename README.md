@@ -13,7 +13,7 @@ Then, from your command line:
 $ git clone https://github.com/jwaanng/SigmaShopping
 
 # Go into the backend folder
-$ cd vivid/server
+$ cd SigmaShopping/server
 
 # install virtual environment
 $ python3 -m venv .venv # for linux
@@ -40,8 +40,4 @@ $ npm run dev
 $ bun run dev
 $ pnpm run dev
 $ yarn run dev
-
-# run the server
-$ cd ../server
-$ python manage.py runserver
 ```
