@@ -19,12 +19,12 @@ export default function RootLayout({ children }) {
       <body className="h-screen w-screen">
         <GlobalStateProvider>
           <div className="flex h-full w-full">
-            
+
             <div className="w-1/4 bg-menuColor p-16">
               <Sidebar />
             </div>
 
-            <div className="w-3/4">
+            <div className="w-3/4 h-screen overflow-y-auto">
               {children}
             </div>
 
