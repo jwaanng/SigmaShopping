@@ -11,7 +11,6 @@ export default function List() {
 
     // State to keep track of checked items
     const [checkedItems, setCheckedItems] = useState({});
-    const SOCKET_SERVER_URL = "http://localhost:5000"; // Flask server URL
 
     useEffect(() => {
         // Connect to the Flask server
