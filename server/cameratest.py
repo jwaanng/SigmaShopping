@@ -1,11 +1,13 @@
-from flask import Flask
-from flask_socketio import SocketIO, emit
+from flask import Flask, request,jsonify
+from flask_socketio import SocketIO,emit
+from flask_cors import CORS
 import cv2
 import math
 from ultralytics import YOLO
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
+CORS(app,resources={r"/*":{"origins":"*"}})
+socketio = SocketIO(app,cors_allowed_origins="*")
 
 def detect_food_from_camera(camera_url):
     cap = cv2.VideoCapture(camera_url)
@@ -72,14 +74,32 @@ def detect_food_from_camera(camera_url):
     cap.release()
     cv2.destroyAllWindows()
 
-@socketio.on('start_detection')
-def handle_start_detection(data):
-    camera_url = data.get('camera_url')
-    if not camera_url:
-        emit('error', {'error': 'camera_url is required'})
-        return
 
-    detect_food_from_camera(camera_url)
+@app.route("/http-call")
+def http_call():
+    """return JSON with string data as the value"""
+    data = {'data':'This text was fetched using an HTTP call to server on render'}
+    return jsonify(data)
+
+@socketio.on("connect")
+def connected():
+    """event listener when client connects to the server"""
+    print(request.sid)
+    print("client has connected")
+    emit("connect",{"data":f"id: {request.sid} is connected"})
+
+@socketio.on('data')
+def object_detection_loop(data):
+    while True:
+        socketio.emit('object_detected', {'data': "sup"})
+
+@socketio.on("disconnect")
+def disconnected():
+    """event listener when client disconnects to the server"""
+    print("user disconnected")
+    emit("disconnect",f"user {request.sid} disconnected",broadcast=True)
+
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+   socketio.start_background_task(object_detection_loop)
+   socketio.run(app, debug=True)

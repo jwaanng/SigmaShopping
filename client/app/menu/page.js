@@ -48,14 +48,5 @@ export default function Sidebar() {
             Submit
         </Link>
     </div>
-
-      <div id="results">
-        {results.map((result, index) => (
-          <p key={index}>
-            Class: {result.class_name}, Confidence: {result.confidence}, Coordinates: {result.coordinates.join(', ')}
-          </p>
-        ))}
-      </div>
-    </div>
   );
 }

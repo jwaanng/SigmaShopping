@@ -1,7 +1,9 @@
 'use client';
 import Link from 'next/link';
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { GlobalStateContext } from '../../contexts/users';
+import io from 'socket.io-client';
+const SOCKET_SERVER_URL = 'http://localhost:5000'; // Flask server URL
 
 export default function List() {
     const { state, setState } = useContext(GlobalStateContext);
@@ -10,6 +12,23 @@ export default function List() {
 
     // State to keep track of checked items
     const [checkedItems, setCheckedItems] = useState({});
+
+    const [detections, setDetections] = useState([]);
+
+    useEffect(() => {
+        // Connect to the Socket.IO server
+        const socket = io(SOCKET_SERVER_URL);
+
+        // Listen for object detection events
+        socket.on('object_detected', (message) => {
+            setDetections((prev) => [...prev, message.data]);
+        });
+
+        // Clean up the socket connection on component unmount
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
 
     // Function to handle checkbox changes
     const crossOffItem = (index) => {
@@ -47,6 +66,10 @@ export default function List() {
                     ))}
                 </div>
             </div>
+
+            <button onClick={()=>{console.log(detections)}}>
+                    test
+            </button>
         </div>
     );
 }
