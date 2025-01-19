@@ -12,8 +12,6 @@ export default function List() {
     // State to keep track of checked items
     const [checkedItems, setCheckedItems] = useState({});
 
-    const [detections, setDetections] = useState([]);
-
     useEffect(() => {
         // Connect to the Flask WebSocket server
         const socket = io('http://localhost:5000', { transports: ['websocket'] });

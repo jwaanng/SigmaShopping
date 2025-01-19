@@ -1,5 +1,6 @@
 import math
 import cv2
+import base64
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
@@ -34,14 +35,27 @@ def detect_food_from_camera(camera_url):
         emit('error', {'error': 'Failed to open camera'})
         return
 
-    cap.set(3, 640)
-    cap.set(4, 480)
+    cap.set(3, 640)  # Width
+    cap.set(4, 480)  # Height
 
     try:
-        model = YOLO("yolo-Weights/yolov8n.pt")  # Adjust the path to your YOLO model
+        model = YOLO("yolo-Weights/yolov8n.pt")
     except Exception as e:
         emit('error', {'error': f'Error loading YOLO model: {e}'})
         return
+
+    classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
+                  "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
+                  "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
+                  "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat",
+                  "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup",
+                  "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli",
+                  "carrot", "hot dog", "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed",
+                  "diningtable", "toilet", "tvmonitor", "laptop", "mouse", "remote", "keyboard", "cell phone",
+                  "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors",
+                  "teddy bear", "hair drier", "toothbrush"]
+
+    food_classes = ["banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake"]
 
     while True:
         success, img = cap.read()
@@ -51,6 +65,8 @@ def detect_food_from_camera(camera_url):
 
         results = model(img, stream=True)
 
+        results_list = []
+
         for r in results:
             boxes = r.boxes
 
@@ -58,20 +74,26 @@ def detect_food_from_camera(camera_url):
                 cls = int(box.cls[0])
                 class_name = classNames[cls]
 
-                if class_name in food_classes:  # Trigger condition for food
+                if class_name in food_classes:
                     x1, y1, x2, y2 = box.xyxy[0]
                     x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
 
                     confidence = math.ceil((box.conf[0]*100))/100
 
-                    # Emit the food detection results to the client
-                    emit('food_detected', {
+                    results_list.append({
                         "class_name": class_name,
                         "confidence": confidence,
                         "coordinates": [x1, y1, x2, y2]
                     })
 
-        # Stop if the 'q' key is pressed
+        emit('results', {'results': results_list})
+
+        # Convert the frame to base64 for streaming
+        _, buffer = cv2.imencode('.jpg', img)  # Encode the frame as JPEG
+        frame_base64 = base64.b64encode(buffer).decode('utf-8')  # Convert to base64 string
+
+        emit('frame', {'image': frame_base64})  # Emit the image to the frontend
+
         if cv2.waitKey(1) == ord('q'):
             break
 
@@ -79,10 +101,10 @@ def detect_food_from_camera(camera_url):
     cv2.destroyAllWindows()
 
 @socketio.on('connect')
-def on_connect():
-    print('Client connected')
-    camera_url = 0  # Set your camera URL here
-    detect_food_from_camera(camera_url)  # Start detecting food once a client connects
+def on_connect(sid):
+    print(f"Client connected: {sid}")
+    # Start detecting food when a client connects
+    detect_food_from_camera(0)
 
 @socketio.on('disconnect')
 def on_disconnect():

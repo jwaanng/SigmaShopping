@@ -8,17 +8,17 @@ export const GlobalStateProvider = ({ children }) => {
   const [state, setState] = useState([
     {
       name: 'Mother',
-      picture: '/testimg.jpg',
+      picture: '/mother.png',
       shoppingList: [],
     },
     {
-      name: 'test',
-      picture: '/testimg.jpg',
+      name: 'Toxic Friend',
+      picture: '/toxic.png',
       shoppingList: [],
     },
     {
-      name: 'test2',
-      picture: '/testimg.jpg',
+      name: 'Gym Coach',
+      picture: '/Untitled80_20250119022957.png',
       shoppingList: [],
     },
   ]);
