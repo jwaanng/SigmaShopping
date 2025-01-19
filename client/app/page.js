@@ -1,4 +1,3 @@
-// app/menu/page.js
 'use client';
 
 import { useContext, useEffect } from 'react';
@@ -62,7 +61,6 @@ export default function Home() {
           ))}
         </div>
       </div>
-
     </div>
   );
 }

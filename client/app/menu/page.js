@@ -1,4 +1,3 @@
-// app/menu/page.js
 'use client';
 import Link from 'next/link';
 import { useContext } from 'react';
@@ -50,5 +49,13 @@ export default function Sidebar() {
         </Link>
     </div>
 
+      <div id="results">
+        {results.map((result, index) => (
+          <p key={index}>
+            Class: {result.class_name}, Confidence: {result.confidence}, Coordinates: {result.coordinates.join(', ')}
+          </p>
+        ))}
+      </div>
+    </div>
   );
 }
