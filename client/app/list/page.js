@@ -11,19 +11,24 @@ export default function List() {
 
     // State to keep track of checked items
     const [checkedItems, setCheckedItems] = useState({});
-    const SOCKET_SERVER_URL = "http://localhost:5000"; // Flask server URL
+
+    const [detections, setDetections] = useState([]);
 
     useEffect(() => {
-        // Connect to the Flask server
-        const socket = io("http://localhost:5000", { transports: ["websocket"] });
+        // Connect to the Flask WebSocket server
+        const socket = io('http://localhost:5000', { transports: ['websocket'] });
 
-        // Listen for the "server_message" event
-        socket.on("server_message", (message) => {
-            console.log("Message from Flask:", message.data);
+        // Listen for events
+        socket.on("connect", () => {
+            console.log("Connected to backend!");
         });
 
+        socket.on('message', (data) => {
+            console.log("Received food detection data:", data);
+        })
+
+        // Clean up the socket connection when the component unmounts
         return () => {
-            // Cleanup the socket connection on unmount
             socket.disconnect();
         };
     }, []);
