@@ -1,24 +1,27 @@
-from flask import Flask, request, jsonify
+from flask import Flask
+from flask_socketio import SocketIO, emit
 import cv2
 import math
 from ultralytics import YOLO
 
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 def detect_food_from_camera(camera_url):
-    # For webcame, use 0
-    # start IP camera
     cap = cv2.VideoCapture(camera_url)
+    if not cap.isOpened():
+        emit('error', {'error': 'Failed to open camera'})
+        return
+
     cap.set(3, 640)
     cap.set(4, 480)
 
-    # model
     try:
         model = YOLO("yolo-Weights/yolov8n.pt")
     except Exception as e:
-        return {"error": f"Error loading YOLO model: {e}"}
+        emit('error', {'error': f'Error loading YOLO model: {e}'})
+        return
 
-    # object classes
     classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
                   "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
                   "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
@@ -28,22 +31,20 @@ def detect_food_from_camera(camera_url):
                   "carrot", "hot dog", "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed",
                   "diningtable", "toilet", "tvmonitor", "laptop", "mouse", "remote", "keyboard", "cell phone",
                   "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors",
-                  "teddy bear", "hair drier", "toothbrush"
-                  ]
+                  "teddy bear", "hair drier", "toothbrush"]
 
-    # food-related classes
     food_classes = ["banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake"]
-
-    results_list = []
 
     while True:
         success, img = cap.read()
         if not success:
-            return {"error": "Failed to capture image"}
+            emit('error', {'error': 'Failed to capture image'})
+            break
 
         results = model(img, stream=True)
 
-        # coordinates
+        results_list = []
+
         for r in results:
             boxes = r.boxes
 
@@ -53,9 +54,8 @@ def detect_food_from_camera(camera_url):
 
                 if class_name in food_classes:
                     x1, y1, x2, y2 = box.xyxy[0]
-                    x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2) # convert to int values
+                    x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
 
-                    # confidence
                     confidence = math.ceil((box.conf[0]*100))/100
 
                     results_list.append({
@@ -64,28 +64,22 @@ def detect_food_from_camera(camera_url):
                         "coordinates": [x1, y1, x2, y2]
                     })
 
+        emit('results', {'results': results_list})
+
         if cv2.waitKey(1) == ord('q'):
             break
 
     cap.release()
     cv2.destroyAllWindows()
 
-    return {"results": results_list}
-
-@app.route('/detect_food', methods=['POST'])
-def detect_food():
-    data = request.json
+@socketio.on('start_detection')
+def handle_start_detection(data):
     camera_url = data.get('camera_url')
     if not camera_url:
-        return jsonify({"error": "camera_url is required"}), 400
+        emit('error', {'error': 'camera_url is required'})
+        return
 
-    results = detect_food_from_camera(camera_url)
-    return jsonify(results)
+    detect_food_from_camera(camera_url)
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-# # Example usage ################################################################
-# camera_url = ... # TODO: INSERT CAMERA URL HERE 
-# # default camera is 0
-# detect_food_from_camera(camera_url)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
