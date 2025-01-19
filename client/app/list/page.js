@@ -2,8 +2,7 @@
 import Link from 'next/link';
 import { useContext, useState, useEffect } from 'react';
 import { GlobalStateContext } from '../../contexts/users';
-import io from 'socket.io-client';
-const SOCKET_SERVER_URL = 'http://localhost:5000'; // Flask server URL
+import io from "socket.io-client";
 
 export default function List() {
     const { state, setState } = useContext(GlobalStateContext);
@@ -12,20 +11,19 @@ export default function List() {
 
     // State to keep track of checked items
     const [checkedItems, setCheckedItems] = useState({});
-
-    const [detections, setDetections] = useState([]);
+    const SOCKET_SERVER_URL = "http://localhost:5000"; // Flask server URL
 
     useEffect(() => {
-        // Connect to the Socket.IO server
-        const socket = io(SOCKET_SERVER_URL);
+        // Connect to the Flask server
+        const socket = io("http://localhost:5000", { transports: ["websocket"] });
 
-        // Listen for object detection events
-        socket.on('object_detected', (message) => {
-            setDetections((prev) => [...prev, message.data]);
+        // Listen for the "server_message" event
+        socket.on("server_message", (message) => {
+            console.log("Message from Flask:", message.data);
         });
 
-        // Clean up the socket connection on component unmount
         return () => {
+            // Cleanup the socket connection on unmount
             socket.disconnect();
         };
     }, []);
